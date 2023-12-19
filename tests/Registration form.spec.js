@@ -37,7 +37,8 @@ test.describe('Registration form', () =>{
         await repeatPassword.click();
         await repeatPassword.blur();
 
-        const validationErrorElements = await page.$$('.invalid-feedback p');
+        const validationErrorLocator = page.locator('.invalid-feedback p');
+        
         const expectedErrorTexts = [
         'Name required',
         'Last name required',
@@ -46,14 +47,48 @@ test.describe('Registration form', () =>{
         'Re-enter password required',
         ];
                 
-        for (let i = 0; i < validationErrorElements.length; i++) {
-        const actualText = await validationErrorElements[i].textContent();
-        expect(actualText).toBe(expectedErrorTexts[i]);
-        }
+        for (let i = 0; i < expectedErrorTexts.length; i++) {
         
+        const locator = validationErrorLocator.nth(i);
+        await expect(locator).toHaveText(expectedErrorTexts[i]);
+
+        }
+              
         await expect(registrButton).toHaveAttribute('disabled');
 
     })
+
+    test('Check validation when Password doesnt match', async ({page}) => {
+
+        const signInButton = page.locator('.hero-descriptor button');
+        const password = page.locator('#signupPassword');
+        const repeatPassword = page.locator('#signupRepeatPassword');
+        const validationErrorLocator = page.locator('.invalid-feedback p');
+
+        await signInButton.click()
+        await password.fill('v123456789V');
+        await repeatPassword.fill('v1234567890V');
+        await repeatPassword.blur();
+
+        await expect(validationErrorLocator).toHaveText('Passwords do not match');
+
+
+    });
+
+    test('Check validation for wrong email format', async ({page}) => {
+
+        const signInButton = page.locator('.hero-descriptor button');
+        const email = page.locator('#signupEmail');
+        const validationErrorLocator = page.locator('.invalid-feedback p');
+
+        await signInButton.click()
+        await email.fill('sdsdsadsadsa');
+        await email.blur();
+
+        await expect(validationErrorLocator).toHaveText('Email is incorrect');
+
+
+    });
 
     test('Create user - possitive + delete user', async ({page}) =>{
 
